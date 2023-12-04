@@ -1,8 +1,4 @@
-use std::fs::File;
-use std::io;
-use std::io::{BufRead};
-use std::path::Path;
-
+use load::open_and_read_inputfile;
 
 fn main() {
     println!("Advent of code day 1 !");
@@ -40,21 +36,4 @@ fn calculate_line(line: &String) -> u32 {
     }
 
     return res;
-}
-
-fn open_and_read_inputfile(file_path: &str) -> io::Result<io::Lines<io::BufReader<File>>>
-{
-    println!("Went into the open and read input file function");
-    let path = Path::new(&file_path);
-    let display = path.display();
-    println!("Created the file path {} ", display);
-
-
-    let file = match File::open(&path) {
-        Err(why) => panic!("couldn't open {}: {}", display, why),
-        Ok(file) => file,
-    };
-    println!("opened the file");
-
-    Ok(io::BufReader::new(file).lines())
 }
