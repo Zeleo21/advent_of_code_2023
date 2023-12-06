@@ -1,6 +1,6 @@
 use load::open_and_read_inputfile;
 use std::collections::HashMap;
-
+use regex::Regex;
 
 fn main() {
     println!("advent of code day 4!");
@@ -15,16 +15,22 @@ fn main() {
         }
     }
     let mut res = 0;
-    for (k, v) in map {
-        res += v;
-        println!("card: {}, copies: {}, total res is: {}", k, v, res);
+    for i in 1..map.len() {
+        let mut value = map.get(&(i as u32)).unwrap();
+        res += value;
+        println!("card: {}, copies: {}, total res is: {}", i, value, res);
     }
 }
 
 fn get_result(line: &String, map: &mut HashMap<u32, u32>) {
     let mut game = line.split(':');
-    let card_id = game.nth(0).unwrap().split(" ").nth(1).unwrap();
-    println!("card id: {}", card_id);
+    let card_id = game.nth(0).unwrap();
+    let regex_number = Regex::new(r"Card\s+(?<number>[0-9]+$)").unwrap();
+    let Some(card_id) = regex_number.captures(card_id) else { 
+        println!("No match found");
+        return;
+    };
+    let card_id = &card_id["number"];
 
     let mut hands = game.nth(0).unwrap().split("|");
 
@@ -42,7 +48,7 @@ fn update_map(map: &mut HashMap<u32, u32>, card_id: &str, copies: u32) {
     if map.contains_key(&update_id) {
         increment = *map.get(&update_id).unwrap();
     }
-    for i in 0..copies {
+    for _i in 0..copies {
         //check if key exists in map
         if !map.contains_key(&update_id) {
             map.insert(update_id, 1);
@@ -65,6 +71,5 @@ fn get_matches(current_hand: &String, winning_hand: &String) -> u32 {
             }
         }
     }
-    println!("result: {}", result);
     return result;
 }

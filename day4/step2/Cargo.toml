@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 load = { path = "../../lib/load" }
+regex = "1.10.2"
