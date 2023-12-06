@@ -1,14 +1,17 @@
 use load::open_and_read_inputfile;
 use ndarray::Array;
-use std::collections::VecDeque;
+use std::{collections::VecDeque, usize};
 use ndarray::Axis;
 
+
+#[derive(Debug, Clone)]
 struct Point {
     value : u32,
     i: u32,
     j: u32
 }
 
+#[derive(Debug, Clone)]
 struct Line {
     points : Vec<Point>
 }
@@ -20,20 +23,8 @@ fn main() {
     println!("res is : {}", res);
 }
 
-
-fn pretty_print(a: &ndarray::prelude::ArrayBase<ndarray::OwnedRepr<char>, ndarray::prelude::Dim<[usize; 2]>>) {
-    for i in 0..140 {
-        print!("line : {} ", i);
-        for j in 0..140 {
-            print!("{}", a[[i, j]]);
-        }
-        println!("");
-    }
-}
-
-
 fn get_result() -> u32 {
-    let mut a: ndarray::prelude::ArrayBase<ndarray::OwnedRepr<char>, ndarray::prelude::Dim<[usize; 2]>> = Array::from_shape_fn((140,140), |_| '\0');
+    let mut a: ndarray::prelude::ArrayBase<ndarray::OwnedRepr<char>, ndarray::prelude::Dim<[usize; 2]>> = Array::from_shape_fn((10,10), |_| '\0');
     let mut i = 0;
     if let Ok(lines) = open_and_read_inputfile("src/input.txt") {
         println!("Ok for opening and reading the input file");
@@ -51,25 +42,34 @@ fn get_result() -> u32 {
 fn calculte_score(a: &ndarray::prelude::ArrayBase<ndarray::OwnedRepr<char>, ndarray::prelude::Dim<[usize; 2]>>) -> u32 {
     
     let mut map: VecDeque<Line> =  VecDeque::new();
+    let mut array: [Line;  3] = [Line{points:Vec::new()}, Line{points:Vec::new()}, Line{points:Vec::new()}];
 
-    map.push_back(get_line(&a, -1));
-    map.push_back(get_line(&a, 0));
-    map.push_back(get_line(&a, 1));
+    array[0] = get_line(&a, -1);
+    array[1] = get_line(&a, 0);
+    array[2] = get_line(&a, 1);
 
-    for line in &map {
+    /*for line in &array {
         pretty_print_line(&line);
         println!("------------------------------------");
     }
-
+    */
+    
     let mut number = String::from("");
     let mut res = 0;
-    for i in 0..140 {
-        map.push_back(get_line(&a, i));
-        map.push_back(get_line(&a, i + 1));
-        map.push_back(get_line(&a, i - 1));
-        for j in 0..140 {
+    for i in 0..10 {
+        array[0] = get_line(&a, i - 1);
+        array[1] = get_line(&a, i);
+        array[2] = get_line(&a, i + 1);
+
+        for line in &array {
+            pretty_print_line(&line);
+            println!("------------------------------------");
+        }
+    
+        for j in 0..10 {
             if a[[i as usize,j]] == '*' {
-                
+                res += get_total_gear(&array, i as usize, j as usize);
+                println!("res is : {}", res);
             }
         }
         //let mut line = get_line(&a, i);
@@ -77,8 +77,21 @@ fn calculte_score(a: &ndarray::prelude::ArrayBase<ndarray::OwnedRepr<char>, ndar
     return 0;
 }
 
-fn get_total_gear(map: &VecDeque<Line>, index: isize) -> u32 {
-    //TODO
+fn get_total_gear(arr: &[Line; 3], rowIndex: usize, columnIndex: usize) -> u32 {
+    let firstLine= get_gear(&arr[0], rowIndex, columnIndex, -1);
+    let secondLine = get_gear(&arr[1], rowIndex, columnIndex, 0);
+    let thirdLine = get_gear(&arr[2], rowIndex, columnIndex, 1);
+    return  firstLine * secondLine * thirdLine;
+    return 0;
+}
+
+fn get_gear(line: &Line, rowIndex: usize, columnIndex: usize, index: isize) -> u32 {
+    for point in &line.points {
+        if point.i == (rowIndex + index as usize) as u32 && (point.j == (columnIndex + index as usize) as u32 
+    || point.j == (columnIndex - index as usize) as u32 || point.j == rowIndex as u32) {
+            return point.value;
+        }
+    }
     return 0;
 }
 
